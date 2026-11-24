@@ -1,0 +1,4 @@
+[
+  {"id": "CLI-001", "nom": "Société Exemple SARL", "email": "contact@exemple.test", "ifu": "0000000000001"},
+  {"id": "CLI-002", "nom": "Boutique Test", "email": "boutique@exemple.test", "ifu": "0000000000002"}
+]

@@ -1,0 +1,4 @@
+[
+  {"id": "ART-001", "designation": "Ciment 50 kg", "prix_reference": 6500, "taxable": true},
+  {"id": "ART-002", "designation": "Fer à béton 10 mm", "prix_reference": 4200, "taxable": true}
+]
