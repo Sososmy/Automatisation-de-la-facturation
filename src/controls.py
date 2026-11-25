@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from decimal import Decimal
 from typing import Iterable, Iterator, Optional
 
@@ -52,11 +53,37 @@ def trouver_client(nom: str, clients: Iterable[Client]) -> tuple[Optional[Client
     return meilleur, score_max
 
 
+def _jetons(texte: str) -> set[str]:
+    """Mots comparables ; chiffres et lettres séparés : « 50kg » -> {50, kg}."""
+    n = re.sub(r"[^a-z0-9 ]", " ", normaliser(texte))
+    n = re.sub(r"(?<=\d)(?=[a-z])|(?<=[a-z])(?=\d)", " ", n)
+    return set(n.split())
+
+
+def _score_article(ligne: str, article: str) -> float:
+    """Similarité entre la désignation d'une ligne et celle d'un article du référentiel.
+
+    - Mots en plus dans la ligne (« sacs de ciment 50kg » pour « Ciment 50 kg ») : acceptés.
+    - Nombres de l'article absents de la ligne (« fer 12 mm » pour « Fer 10 mm ») : deux articles
+      différents, score 0.
+    - Ligne plus vague que l'article (nombres absents) : jamais reconnue d'office (plafond 79).
+    """
+    jl, ja = _jetons(ligne), _jetons(article)
+    nl = {j for j in jl if j.isdigit()}
+    na = {j for j in ja if j.isdigit()}
+    if na and nl and not na <= nl:
+        return 0.0
+    score = 100.0 if ja and ja <= jl else _score(ligne, article)
+    if na and not nl:
+        score = min(score, 79.0)
+    return score
+
+
 def trouver_article(designation: str, articles: Iterable[Article]) -> tuple[Optional[Article], float]:
     """Article le plus proche et son score (0 à 100)."""
     meilleur, score_max = None, 0.0
     for a in articles:
-        s = _score(designation, a.designation)
+        s = _score_article(designation, a.designation)
         if s > score_max:
             meilleur, score_max = a, s
     return meilleur, score_max

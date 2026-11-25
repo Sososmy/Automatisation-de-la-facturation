@@ -303,3 +303,28 @@ def test_meme_contenu_avec_fichiers_differents_reste_un_doublon():
     a = controle_doublon(nouveau, [ancien])
     assert codes(a) == [CodeAnomalie.DOUBLON]
     assert "contenu" in a[0].message
+
+
+# ------------------- rapprochement des articles (désignations) -------------------
+@pytest.mark.parametrize("designation", [
+    "sacs de ciment 50kg",              # mots descriptifs en plus
+    "Ciment 50 kg",
+    "ciment 50KG",
+    "barres de fer à béton 10 mm",
+    "12 barres de fer a beton 10mm",    # quantité restée dans la désignation
+    "Cimnt 50 kg",                      # faute de frappe
+])
+def test_designations_reconnues(designation):
+    assert controle_lignes(dossier(lignes=[ligne(designation=designation, prix="6500" if "iment" in designation.lower() or "cimnt" in designation.lower() else "4200")]), ARTICLES) == []
+
+
+@pytest.mark.parametrize("designation", [
+    "fer à béton 12 mm",    # autre article : le nombre diffère
+    "barres de fer 8 mm",
+    "ciment 35 kg",
+    "fer à béton",          # trop vague : plusieurs articles possibles
+    "ciment",
+])
+def test_designations_non_reconnues_sont_signalees(designation):
+    a = controle_lignes(dossier(lignes=[ligne(designation=designation)]), ARTICLES)
+    assert codes(a) == [CodeAnomalie.ARTICLE_INCONNU]
