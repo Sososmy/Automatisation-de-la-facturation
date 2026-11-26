@@ -1,0 +1,552 @@
+{
+  "jeu": "data\\eval\\exemple.jsonl",
+  "mode": "degrade",
+  "modele": null,
+  "resultats": {
+    "cas": 12,
+    "erreurs_extraction": 0,
+    "mode_degrade": 12,
+    "valeurs_rejetees": 0,
+    "exactitude": 0.442,
+    "exactitude_critique": 0.0,
+    "erreurs": 0.0,
+    "omissions": 0.558,
+    "invention": 0.0,
+    "inventions_nb": 0,
+    "inventions_citation_valide": 0,
+    "lignes_trouvees": 0.0,
+    "lignes_en_trop": 0,
+    "citations_verifiees": 1.0,
+    "latence_moy_s": 0.0,
+    "latence_p95_s": 0.01,
+    "par_champ": {
+      "client": {
+        "omission": 10
+      },
+      "conditions_paiement": {
+        "omission": 1
+      },
+      "designation": {
+        "omission": 16
+      },
+      "prix_unitaire": {
+        "omission": 15
+      },
+      "quantite": {
+        "omission": 16
+      },
+      "remise": {
+        "omission": 4
+      },
+      "total_ttc_declare": {
+        "omission": 1
+      }
+    }
+  },
+  "journal": [
+    {
+      "id": "ex01_nominal_remise",
+      "type": "omission",
+      "champ": "client",
+      "attendu": "Société Exemple",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex01_nominal_remise",
+      "type": "omission",
+      "champ": "designation",
+      "attendu": "sacs de ciment 50 kg",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex01_nominal_remise",
+      "type": "omission",
+      "champ": "quantite",
+      "attendu": "10",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex01_nominal_remise",
+      "type": "omission",
+      "champ": "prix_unitaire",
+      "attendu": "6 500",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex01_nominal_remise",
+      "type": "omission",
+      "champ": "remise",
+      "attendu": "5 %",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex01_nominal_remise",
+      "type": "omission",
+      "champ": "designation",
+      "attendu": "barres de fer à béton 10 mm",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex01_nominal_remise",
+      "type": "omission",
+      "champ": "quantite",
+      "attendu": "20",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex01_nominal_remise",
+      "type": "omission",
+      "champ": "prix_unitaire",
+      "attendu": "4 200",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex02_client_prix_absents",
+      "type": "omission",
+      "champ": "designation",
+      "attendu": "sacs de ciment 50 kg",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex02_client_prix_absents",
+      "type": "omission",
+      "champ": "quantite",
+      "attendu": "5",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex03_commande_deux_lignes",
+      "type": "omission",
+      "champ": "client",
+      "attendu": "Société Alima BTP",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex03_commande_deux_lignes",
+      "type": "omission",
+      "champ": "designation",
+      "attendu": "fer à béton 10 mm",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex03_commande_deux_lignes",
+      "type": "omission",
+      "champ": "quantite",
+      "attendu": "3",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex03_commande_deux_lignes",
+      "type": "omission",
+      "champ": "prix_unitaire",
+      "attendu": "4 200",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex03_commande_deux_lignes",
+      "type": "omission",
+      "champ": "designation",
+      "attendu": "sacs de ciment 50 kg",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex03_commande_deux_lignes",
+      "type": "omission",
+      "champ": "quantite",
+      "attendu": "2",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex03_commande_deux_lignes",
+      "type": "omission",
+      "champ": "prix_unitaire",
+      "attendu": "6 500",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex04_remise_commerciale",
+      "type": "omission",
+      "champ": "client",
+      "attendu": "Boutique Sènou",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex04_remise_commerciale",
+      "type": "omission",
+      "champ": "designation",
+      "attendu": "bidons d'huile moteur",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex04_remise_commerciale",
+      "type": "omission",
+      "champ": "quantite",
+      "attendu": "4",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex04_remise_commerciale",
+      "type": "omission",
+      "champ": "prix_unitaire",
+      "attendu": "12 500",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex04_remise_commerciale",
+      "type": "omission",
+      "champ": "remise",
+      "attendu": "10 %",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex05_exoneree",
+      "type": "omission",
+      "champ": "client",
+      "attendu": "Librairie Akpakpa",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex05_exoneree",
+      "type": "omission",
+      "champ": "designation",
+      "attendu": "cahiers",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex05_exoneree",
+      "type": "omission",
+      "champ": "quantite",
+      "attendu": "10",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex05_exoneree",
+      "type": "omission",
+      "champ": "prix_unitaire",
+      "attendu": "500",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex06_livraison_paiement",
+      "type": "omission",
+      "champ": "client",
+      "attendu": "Atelier Dossou",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex06_livraison_paiement",
+      "type": "omission",
+      "champ": "designation",
+      "attendu": "sacs de charbon",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex06_livraison_paiement",
+      "type": "omission",
+      "champ": "quantite",
+      "attendu": "6",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex06_livraison_paiement",
+      "type": "omission",
+      "champ": "prix_unitaire",
+      "attendu": "1 800",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex07_date_en_lettres_mobile_money",
+      "type": "omission",
+      "champ": "client",
+      "attendu": "Société Tchité",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex07_date_en_lettres_mobile_money",
+      "type": "omission",
+      "champ": "designation",
+      "attendu": "cartons de savon",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex07_date_en_lettres_mobile_money",
+      "type": "omission",
+      "champ": "quantite",
+      "attendu": "8",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex07_date_en_lettres_mobile_money",
+      "type": "omission",
+      "champ": "prix_unitaire",
+      "attendu": "3 000",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex08_message_sans_totaux",
+      "type": "omission",
+      "champ": "designation",
+      "attendu": "bidons d'eau de 1,5 L",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex08_message_sans_totaux",
+      "type": "omission",
+      "champ": "quantite",
+      "attendu": "3",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex08_message_sans_totaux",
+      "type": "omission",
+      "champ": "prix_unitaire",
+      "attendu": "700",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex08_message_sans_totaux",
+      "type": "omission",
+      "champ": "designation",
+      "attendu": "boîtes de gants",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex08_message_sans_totaux",
+      "type": "omission",
+      "champ": "quantite",
+      "attendu": "2",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex08_message_sans_totaux",
+      "type": "omission",
+      "champ": "prix_unitaire",
+      "attendu": "2 000",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex09_grands_montants",
+      "type": "omission",
+      "champ": "client",
+      "attendu": "Maison Awa",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex09_grands_montants",
+      "type": "omission",
+      "champ": "designation",
+      "attendu": "sachets de farine",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex09_grands_montants",
+      "type": "omission",
+      "champ": "quantite",
+      "attendu": "1 000",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex09_grands_montants",
+      "type": "omission",
+      "champ": "prix_unitaire",
+      "attendu": "1 250",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex10_zero_et_exoneration",
+      "type": "omission",
+      "champ": "client",
+      "attendu": "Librairie Akpakpa",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex10_zero_et_exoneration",
+      "type": "omission",
+      "champ": "total_ttc_declare",
+      "attendu": "5 000",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex10_zero_et_exoneration",
+      "type": "omission",
+      "champ": "designation",
+      "attendu": "cahiers",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex10_zero_et_exoneration",
+      "type": "omission",
+      "champ": "quantite",
+      "attendu": "10",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex10_zero_et_exoneration",
+      "type": "omission",
+      "champ": "prix_unitaire",
+      "attendu": "500",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex10_zero_et_exoneration",
+      "type": "omission",
+      "champ": "remise",
+      "attendu": "0 %",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex11_prix_confirme_par_telephone",
+      "type": "omission",
+      "champ": "client",
+      "attendu": "Atelier Kora",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex11_prix_confirme_par_telephone",
+      "type": "omission",
+      "champ": "conditions_paiement",
+      "attendu": "à réception",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex11_prix_confirme_par_telephone",
+      "type": "omission",
+      "champ": "designation",
+      "attendu": "sacs de maïs",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex11_prix_confirme_par_telephone",
+      "type": "omission",
+      "champ": "quantite",
+      "attendu": "12",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex11_prix_confirme_par_telephone",
+      "type": "omission",
+      "champ": "prix_unitaire",
+      "attendu": "18 500",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex12_commande_deux_remises",
+      "type": "omission",
+      "champ": "client",
+      "attendu": "Garage Adjinakou",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex12_commande_deux_remises",
+      "type": "omission",
+      "champ": "designation",
+      "attendu": "filtres à huile",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex12_commande_deux_remises",
+      "type": "omission",
+      "champ": "quantite",
+      "attendu": "2",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex12_commande_deux_remises",
+      "type": "omission",
+      "champ": "prix_unitaire",
+      "attendu": "5 500",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex12_commande_deux_remises",
+      "type": "omission",
+      "champ": "remise",
+      "attendu": "5 %",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex12_commande_deux_remises",
+      "type": "omission",
+      "champ": "designation",
+      "attendu": "bidons de liquide de frein",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex12_commande_deux_remises",
+      "type": "omission",
+      "champ": "quantite",
+      "attendu": "3",
+      "predit": null,
+      "source": null
+    },
+    {
+      "id": "ex12_commande_deux_remises",
+      "type": "omission",
+      "champ": "prix_unitaire",
+      "attendu": "2 000",
+      "predit": null,
+      "source": null
+    }
+  ]
+}

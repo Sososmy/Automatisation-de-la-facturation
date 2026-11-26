@@ -1,5 +1,34 @@
 {
-  "description": "Quantité livrée < commandée -> validation bloquée",
-  "source": "",
-  "attendu": {}
+  "id": "04_livraison",
+  "description": "Une quantité livrée est inférieure à la commande : revue obligatoire.",
+  "action": "bloquee",
+  "source": "Société Exemple SARL — BC-2026-004 — 28/11/2026 — commande de 4 sacs de ciment 50 kg à 6 500 XOF, TVA 18 %.",
+  "dossier": {
+    "client": "Société Exemple SARL",
+    "numero_commande": "BC-2026-004",
+    "date": "28/11/2026",
+    "conditions_paiement": "À la livraison",
+    "taux_taxe": "18 %",
+    "total_ht_declare": "26 000",
+    "total_ttc_declare": "30 680",
+    "lignes": [
+      {
+        "designation": "Ciment 50 kg",
+        "quantite": "4",
+        "prix_unitaire": "6 500",
+        "remise": "0",
+        "article_id": "ART-001"
+      }
+    ],
+    "livraison": [
+      {
+        "designation": "Ciment 50 kg",
+        "quantite": "3"
+      }
+    ]
+  },
+  "attendu": {
+    "anomalies": ["ECART_LIVRAISON"],
+    "resultat": "BLOQUEE"
+  }
 }

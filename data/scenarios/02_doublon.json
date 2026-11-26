@@ -1,5 +1,28 @@
 {
-  "description": "Même dossier soumis deux fois -> signalé, pas de double facture",
-  "source": "",
-  "attendu": {}
+  "id": "02_doublon",
+  "description": "Même dossier transmis sous un autre nom : le doublon est bloqué.",
+  "action": "doublon",
+  "source": "Copie reçue par courriel de la commande BC-2026-001.",
+  "dossier": {
+    "client": "Société Exemple SARL",
+    "numero_commande": "BC-2026-001",
+    "date": "26/11/2026",
+    "conditions_paiement": "Comptant",
+    "taux_taxe": "18 %",
+    "total_ht_declare": "13 000",
+    "total_ttc_declare": "15 340",
+    "lignes": [
+      {
+        "designation": "Ciment 50 kg",
+        "quantite": "2",
+        "prix_unitaire": "6 500",
+        "remise": "0",
+        "article_id": "ART-001"
+      }
+    ]
+  },
+  "attendu": {
+    "anomalies": ["DOUBLON"],
+    "resultat": "DOUBLON"
+  }
 }

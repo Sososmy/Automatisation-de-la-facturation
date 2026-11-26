@@ -1,5 +1,28 @@
 {
-  "description": "Total extrait différent du total recalculé -> écart signalé",
-  "source": "",
-  "attendu": {}
+  "id": "03_ecart",
+  "description": "Totaux déclarés différents du recalcul : la validation est bloquée.",
+  "action": "bloquee",
+  "source": "Boutique Test — BC-2026-003 — 27/11/2026 — 3 sacs de ciment 50 kg à 6 500 XOF, total HT 19 000 XOF et TTC 22 000 XOF.",
+  "dossier": {
+    "client": "Boutique Test",
+    "numero_commande": "BC-2026-003",
+    "date": "27/11/2026",
+    "conditions_paiement": "À la livraison",
+    "taux_taxe": "18 %",
+    "total_ht_declare": "19 000",
+    "total_ttc_declare": "22 000",
+    "lignes": [
+      {
+        "designation": "Ciment 50 kg",
+        "quantite": "3",
+        "prix_unitaire": "6 500",
+        "remise": "0",
+        "article_id": "ART-001"
+      }
+    ]
+  },
+  "attendu": {
+    "anomalies": ["ECART_MONTANT", "ECART_MONTANT"],
+    "resultat": "BLOQUEE"
+  }
 }

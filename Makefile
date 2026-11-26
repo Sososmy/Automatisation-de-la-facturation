@@ -5,6 +5,10 @@ run:
 test:
 	python -m pytest -q
 reset:
-	python scripts/reset_data.py
+	python -m scripts.reset_data --confirm
 scenarios:
-	python scripts/run_scenarios.py
+	python -m scripts.run_scenarios
+docker-up:
+	docker compose up --build -d
+docker-down:
+	docker compose down

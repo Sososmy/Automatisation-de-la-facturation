@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BWAI 2026 — Du modèle à la facture</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --navy: #10233f;
+      --teal: #117a69;
+      --mint: #dff4ed;
+      --ink: #1d2b3d;
+      --muted: #64748b;
+      --line: #dbe4ed;
+      --paper: #ffffff;
+      --amber: #f3b84b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 28px;
+      background: #eaf0f5;
+      color: var(--ink);
+      font: 16px/1.45 "Segoe UI", Arial, sans-serif;
+    }
+
+    .deck {
+      display: grid;
+      justify-items: center;
+      gap: 24px;
+    }
+
+    .slide {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      width: min(1120px, calc(100vw - 56px));
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      padding: 5.2% 6%;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 16px 46px #10233f1c;
+    }
+
+    .slide.dark {
+      color: white;
+      background:
+        radial-gradient(ellipse at 86% 16%, #1c786f 0, transparent 37%),
+        linear-gradient(135deg, #10233f, #153d54 75%, #116a61);
+      border: 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--teal);
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .dark .eyebrow { color: #8de0c9; }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      max-width: 760px;
+      margin-bottom: 18px;
+      font-size: clamp(2.2rem, 5vw, 4.1rem);
+      line-height: 1.04;
+      letter-spacing: -.04em;
+    }
+
+    h2 {
+      max-width: 900px;
+      margin-bottom: 20px;
+      color: var(--navy);
+      font-size: clamp(1.7rem, 3.2vw, 2.8rem);
+      line-height: 1.08;
+      letter-spacing: -.03em;
+    }
+
+    h3 {
+      margin-bottom: 7px;
+      color: var(--navy);
+      font-size: 1rem;
+    }
+
+    .dark h2, .dark h3 { color: white; }
+    .lead { max-width: 740px; color: var(--muted); font-size: 1.13rem; }
+    .dark .lead { color: #d9e7ef; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin: auto 0 20px;
+    }
+
+    .flow div {
+      position: relative;
+      padding: 15px 10px;
+      border: 1px solid #ffffff40;
+      border-radius: 10px;
+      background: #ffffff12;
+      text-align: center;
+      font-size: .92rem;
+      font-weight: 700;
+    }
+
+    .flow div:not(:last-child)::after {
+      position: absolute;
+      top: 50%;
+      right: -12px;
+      content: "›";
+      color: #9de7d3;
+      font-size: 1.4rem;
+      transform: translateY(-55%);
+    }
+
+    .thesis {
+      max-width: 830px;
+      margin: 0;
+      padding-left: 16px;
+      border-left: 4px solid var(--amber);
+      color: #eaf6f2;
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .panel {
+      padding: 17px 19px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fbfdff;
+    }
+
+    .panel p:last-child { margin-bottom: 0; }
+    ul { margin: 8px 0 0; padding-left: 20px; }
+    li { margin: 5px 0; }
+    .muted { color: var(--muted); }
+
+    .model-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 16px;
+      padding: 9px 13px;
+      border: 1px solid #9ed5c7;
+      border-radius: 99px;
+      background: var(--mint);
+      color: #14594e;
+      font-weight: 750;
+    }
+
+    .model-chip::before {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--teal);
+      content: "";
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 11px;
+      margin: 4px 0 14px;
+    }
+
+    .metric {
+      min-height: 86px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fbfdff;
+    }
+
+    .metric strong {
+      display: block;
+      color: var(--teal);
+      font-size: 1.65rem;
+      letter-spacing: -.04em;
+    }
+
+    .metric span { color: var(--muted); font-size: .8rem; }
+    .callout {
+      padding: 12px 15px;
+      border-left: 4px solid var(--amber);
+      border-radius: 0 8px 8px 0;
+      background: #fff8e9;
+      color: #604b21;
+      font-size: .9rem;
+    }
+
+    .calc {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px 22px;
+      padding: 16px 18px;
+      border-radius: 12px;
+      background: var(--navy);
+      color: white;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .calc .total {
+      margin-top: 4px;
+      padding-top: 10px;
+      border-top: 1px solid #ffffff52;
+      color: #9de7d3;
+      font-size: 1.18rem;
+      font-weight: 800;
+    }
+
+    .stages {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 10px 0 14px;
+    }
+
+    .stage {
+      padding: 14px;
+      border-top: 3px solid var(--teal);
+      border-radius: 7px;
+      background: #f1f7f7;
+    }
+
+    .stage b {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--navy);
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: auto;
+      padding-top: 14px;
+      color: var(--muted);
+      font-size: .76rem;
+    }
+
+    .dark .footer { color: #c6d6df; }
+
+    @media (max-width: 700px) {
+      body { padding: 12px; }
+      .slide {
+        width: calc(100vw - 24px);
+        aspect-ratio: auto;
+        min-height: 650px;
+        padding: 26px;
+      }
+      .flow { grid-template-columns: 1fr; }
+      .flow div:not(:last-child)::after {
+        top: auto;
+        right: 50%;
+        bottom: -19px;
+        transform: rotate(90deg);
+      }
+      .grid-2, .metrics, .stages { grid-template-columns: 1fr 1fr; }
+      h1 { font-size: 2.35rem; }
+    }
+
+    @page { size: 13.333in 7.5in; margin: 0; }
+
+    @media print {
+      body { padding: 0; background: white; }
+      .deck { display: block; }
+      .slide {
+        width: 13.333in;
+        height: 7.5in;
+        aspect-ratio: auto;
+        margin: 0;
+        padding: .56in .8in;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        page-break-after: always;
+        break-after: page;
+      }
+      .slide:last-child { page-break-after: auto; break-after: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" aria-label="Présentation BWAI 2026 en cinq diapositives">
+    <section class="slide dark" aria-labelledby="slide-1">
+      <p class="eyebrow">BWAI · Facturation automatisée · 2026</p>
+      <h1 id="slide-1">Du modèle à la facture : une chaîne sous contrôle.</h1>
+      <p class="lead">Transformer un message commercial en facture vérifiée, sans laisser l'IA décider seule.</p>
+      <div class="flow" aria-label="Document, modèle, revue, calcul, facture">
+        <div>01 · Document</div>
+        <div>02 · Modèle IA</div>
+        <div>03 · Revue humaine</div>
+        <div>04 · Calcul métier</div>
+        <div>05 · Facture</div>
+      </div>
+      <p class="thesis">L’IA lit et propose. Le code vérifie et calcule. Une personne confirme et valide.</p>
+      <div class="footer"><span>Prototype de démonstration · Bénin</span><span>01 / 05</span></div>
+    </section>
+
+    <section class="slide" aria-labelledby="slide-2">
+      <p class="eyebrow">01 · Le modèle</p>
+      <h2 id="slide-2">Extraire les informations utiles — pas fabriquer une facture.</h2>
+      <div class="model-chip">Ollama local · qwen2.5:3b par défaut</div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Ce qui entre</h3>
+          <ul>
+            <li>Message, commande ou devis collé dans l'application</li>
+            <li>Fichier PDF textuel, TXT ou MD</li>
+            <li>Exemple : client, date, articles, quantités, prix et remise</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Ce que le modèle propose</h3>
+          <ul>
+            <li>Une réponse structurée en JSON, champs absents laissés vides</li>
+            <li>Des lignes de commande et leurs valeurs telles qu'écrites</li>
+            <li>Aucun calcul de total : le moteur métier s'en charge ensuite</li>
+          </ul>
+        </div>
+      </div>
+      <p class="callout" style="margin-top:14px"><strong>Garde-fou :</strong> le code vérifie que les valeurs proposées figurent dans la source et retrouve leur extrait. Si le modèle échoue, un mode dégradé limité et la saisie manuelle prennent le relais. Les PDF scannés ne sont pas lus : pas d’OCR.</p>
+      <div class="footer"><span>Les données extraites restent à vérifier.</span><span>02 / 05</span></div>
+    </section>
+
+    <section class="slide" aria-labelledby="slide-3">
+      <p class="eyebrow">02 · Mesure et limites du modèle</p>
+      <h2 id="slide-3">Une aide prometteuse, encore loin d'une validation automatique.</h2>
+      <p class="muted">Première mesure locale de qwen2.5:3b · 12 exemples synthétiques annotés</p>
+      <div class="metrics" aria-label="Résultats de l'évaluation exploratoire">
+        <div class="metric"><strong>68,1 %</strong><span>Exactitude, tous champs</span></div>
+        <div class="metric"><strong>70,7 %</strong><span>Exactitude, champs critiques</span></div>
+        <div class="metric"><strong>68,8 %</strong><span>Rappel des lignes de commande</span></div>
+        <div class="metric"><strong>26,25 s</strong><span>Latence moyenne · p95 : 32,26 s</span></div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Ce que les résultats disent</h3>
+          <p>Le modèle peut omettre des lignes ou des champs et a produit une valeur inventée sur un cas. La revue humaine est donc indispensable.</p>
+        </div>
+        <div class="panel">
+          <h3>Ce qu'ils ne disent pas</h3>
+          <p>Ce petit jeu fictif n'est pas représentatif de documents réels. Il ne certifie ni la fiabilité générale ni la conformité du système.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Mesure exploratoire · aucune décision automatique</span><span>03 / 05</span></div>
+    </section>
+
+    <section class="slide" aria-labelledby="slide-4">
+      <p class="eyebrow">03 · Contrôle et calcul</p>
+      <h2 id="slide-4">La revue humaine transforme une extraction en données métier confirmées.</h2>
+      <div class="stages">
+        <div class="stage"><b>Confirmer le client</b><span>Rapprochement avec le référentiel ; une correspondance incertaine demande confirmation.</span></div>
+        <div class="stage"><b>Confirmer les articles</b><span>Vérifier désignation, quantité, prix, remise et éventuel écart au prix de référence.</span></div>
+        <div class="stage"><b>Traiter les anomalies</b><span>Compléter ou corriger les champs, puis marquer les alertes comme vérifiées.</span></div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Calcul déterministe</h3>
+          <p>Montants en XOF ; remise appliquée avant la taxe ; taxe configurée sur les articles taxables ; arrondi à l'unité.</p>
+        </div>
+        <div class="panel">
+          <h3>Rapprochement des totaux</h3>
+          <p>Les totaux HT et TTC recalculés sont comparés à ceux du document. Tout écart est signalé, jamais corrigé en silence.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Une personne garde la décision sur les informations sensibles.</span><span>04 / 05</span></div>
+    </section>
+
+    <section class="slide" aria-labelledby="slide-5">
+      <p class="eyebrow">04 · Du brouillon à l’émission</p>
+      <h2 id="slide-5">La facture n'est émise qu'après validation humaine.</h2>
+      <div class="grid-2">
+        <div>
+          <div class="calc" aria-label="Exemple de calcul de facture en XOF">
+            <span>10 × ciment 50 kg à 6 500</span><strong>65 000</strong>
+            <span>5 × fer à béton 10 mm à 4 200</span><strong>21 000</strong>
+            <span>Sous-total HT</span><strong>86 000</strong>
+            <span>Remise 5 %</span><strong>− 4 300</strong>
+            <span>HT après remise</span><strong>81 700</strong>
+            <span>Taxe 18 %</span><strong>14 706</strong>
+            <span class="total">Total TTC</span><strong class="total">96 406 XOF</strong>
+          </div>
+          <p class="muted" style="margin:9px 0 0;font-size:.8rem">Exemple pédagogique : deux articles taxables du référentiel de démonstration.</p>
+        </div>
+        <div>
+          <div class="stage"><b>1 · Enregistrer</b><span>Le brouillon est conservé dans SQLite avec un historique des opérations.</span></div>
+          <div class="stage" style="margin-top:10px"><b>2 · Valider</b><span>La validation humaine déclenche un numéro interne SIM-* et verrouille le document.</span></div>
+          <div class="stage" style="margin-top:10px"><b>3 · Produire / notifier</b><span>Aperçu PDF téléchargeable ; courriel seulement simulé, après confirmation de l'échéance.</span></div>
+        </div>
+      </div>
+      <p class="callout" style="margin-top:14px"><strong>À retenir :</strong> le PDF n'est pas une facture normalisée DGI, les numéros SIM-* sont internes au prototype et aucun courriel n'est réellement envoyé.</p>
+      <div class="footer"><span>BWAI · Du document commercial au brouillon vérifié</span><span>05 / 05</span></div>
+    </section>
+  </main>
+</body>
+</html>

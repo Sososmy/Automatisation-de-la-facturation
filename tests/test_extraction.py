@@ -1,12 +1,15 @@
+import hashlib
 import json
 from decimal import Decimal
+from io import BytesIO
 
 import pytest
 
 from src.controls import controler
 from src.extraction import (
-    ExtractionError, SourceLue, construire_prompt, extraire, extraire_avec_repli,
-    extraire_degrade, lire_fichier, lire_json, lire_texte, normaliser_date, verifier_champ,
+    ClientOllama, ExtractionError, SourceLue, construire_prompt, extraire, extraire_avec_repli,
+    extraire_degrade, lire_fichier, lire_json, lire_lignes_livraison, lire_televersement,
+    lire_texte, normaliser_date, verifier_champ,
 )
 from src.schemas import Article, Client, CodeAnomalie
 
@@ -61,6 +64,43 @@ def test_lire_fichier_txt_et_erreurs(tmp_path):
     (tmp_path / "photo.jpg").write_bytes(b"x")
     with pytest.raises(ExtractionError, match="Format"):
         lire_fichier(tmp_path / "photo.jpg")
+
+
+def test_lire_televersement_txt_pdf_et_erreurs(tmp_path):
+    contenu = MESSAGE.encode("utf-8")
+    source = lire_televersement("devis.txt", contenu)
+    assert source.texte == MESSAGE
+    assert source.nom_fichier == "devis.txt"
+    assert source.hash == hashlib.sha256(contenu).hexdigest()
+
+    pytest.importorskip("reportlab.pdfgen.canvas")
+    from reportlab.pdfgen.canvas import Canvas
+
+    sortie = BytesIO()
+    pdf = Canvas(sortie)
+    pdf.drawString(72, 750, "Devis DV-12 Boutique Test")
+    pdf.save()
+    source_pdf = lire_televersement("devis.pdf", sortie.getvalue())
+    assert "Boutique Test" in source_pdf.texte
+
+    with pytest.raises(ExtractionError, match="vide"):
+        lire_televersement("devis.txt", b"")
+    with pytest.raises(ExtractionError, match="Format"):
+        lire_televersement("photo.jpg", b"image")
+
+
+def test_lire_lignes_livraison_valide_et_rejette_les_entrees_ambigues():
+    lignes = lire_lignes_livraison("Ciment 50 kg; 2\nFer à béton 10 mm;1 000")
+    assert [(ligne.designation, ligne.quantite) for ligne in lignes] == [
+        ("Ciment 50 kg", Decimal("2")),
+        ("Fer à béton 10 mm", Decimal("1000")),
+    ]
+    assert lignes[0].source == "Ligne 1 : Ciment 50 kg; 2"
+    assert lire_lignes_livraison("  \n") == []
+
+    for valeur in ("Ciment 50 kg", "Ciment 50 kg; 0", "Ciment; quantité"):
+        with pytest.raises(ExtractionError, match="Ligne de livraison"):
+            lire_lignes_livraison(valeur)
 
 
 def test_lire_fichier_pdf_avec_texte_et_sans_texte(tmp_path):
@@ -133,6 +173,64 @@ def test_taux_de_taxe_et_totaux():
     assert d.taux_taxe.confiance == 0.97 and d.total_ht_declare.valeur == "12600"
     d = lancer({"taux_taxe": "exonéré"}, "Facture exonérée de TVA, 2 sacs de ciment").dossier
     assert d.taux_taxe.valeur == "exonéré"
+
+
+def test_verification_semantique_rejette_une_date_utilisee_comme_reference():
+    d = lancer(
+        {"numero_commande": "12/11/2026"},
+        "12/11/2026 Bonjour, commande en préparation.",
+    ).dossier
+    assert d.numero_commande.valeur is None
+
+    reference = lancer(
+        {"numero_commande": "DV-2026-012"},
+        "Demande de devis DV-2026-012.",
+    ).dossier
+    assert reference.numero_commande.valeur == "DV-2026-012"
+
+
+def test_taux_de_taxe_ne_confond_pas_tva_et_remise():
+    texte = "Remise 5 %. Aucune mention de TVA."
+    dossier_sans_taux = lancer({"taux_taxe": "5 %"}, texte).dossier
+    assert dossier_sans_taux.taux_taxe.valeur is None
+
+    dossier_avec_taux = lancer(
+        {"taux_taxe": "18 %"},
+        "Remise 5 %. TVA 18 %.",
+    ).dossier
+    assert dossier_avec_taux.taux_taxe.valeur == "18 %"
+
+
+def test_date_libellee_prend_le_pas_sur_une_date_de_livraison():
+    texte = "Date : 05/11/2026. Livraison du 07/11/2026."
+    date_livraison = lancer({"date": "07/11/2026"}, texte).dossier
+    date_document = lancer({"date": "05/11/2026"}, texte).dossier
+    assert date_livraison.date.valeur is None
+    assert date_document.date.valeur == "05/11/2026"
+
+
+def test_nom_personnel_non_identifie_comme_client_est_rejete():
+    texte = "Je passe demain. Mme Adjovi"
+    sans_libelle = lancer({"client": "Mme Adjovi"}, texte).dossier
+    avec_libelle = lancer(
+        {"client": "Mme Adjovi"},
+        "Client : Mme Adjovi. Commande 2 sacs.",
+    ).dossier
+    assert sans_libelle.client.valeur is None
+    assert avec_libelle.client.valeur == "Mme Adjovi"
+
+
+def test_quantite_rejette_une_dimension_avec_unite():
+    dossier = lancer(
+        {"lignes": [{
+            "designation": "Tôle ondulée 3 m",
+            "quantite": "3 m",
+            "prix_unitaire": "7 500",
+        }]},
+        "Désignation Qté PU Montant\nTôle ondulée 3 m 150 7 500 1 125 000",
+    ).dossier
+    assert dossier.lignes[0].quantite.valeur is None
+    assert dossier.lignes[0].prix_unitaire.valeur == "7 500"
 
 
 # ----------------------- anti-invention (le plus important) -----------------------
@@ -212,6 +310,29 @@ def test_mode_degrade_ne_renvoie_rien_quand_rien_nest_sur():
 
 def test_avec_repli_garde_le_resultat_du_modele_quand_il_marche():
     assert extraire_avec_repli(lire_texte(MESSAGE), ClientFaux(REPONSE)).mode == "llm"
+
+
+def test_client_ollama_laisse_le_temps_au_modele_local_de_charger(monkeypatch):
+    appels = {}
+
+    class Reponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return False
+
+        def read(self):
+            return b'{"message":{"content":"{}"}}'
+
+    def urlopen(requete, timeout):
+        appels["timeout"] = timeout
+        return Reponse()
+
+    monkeypatch.setattr("src.extraction.urllib.request.urlopen", urlopen)
+
+    assert ClientOllama().completer("", "") == "{}"
+    assert appels["timeout"] == 300
 
 
 # ------------------------------ sécurité --------------------------------

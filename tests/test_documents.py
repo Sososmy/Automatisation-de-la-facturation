@@ -4,12 +4,23 @@ import pytest
 
 from src.documents import (
     AvoirDejaCree,
+    ConflitReglement,
     ConflitIdempotence,
     ConflitVersion,
     DepotDocuments,
+    ErreurDocument,
+    TransitionInvalide,
     ValidationBloquee,
 )
-from src.schemas import Anomalie, CodeAnomalie, Facture, LigneCalculee, Statut
+from src.schemas import (
+    Anomalie,
+    ChampExtrait,
+    CodeAnomalie,
+    DossierExtrait,
+    Facture,
+    LigneCalculee,
+    Statut,
+)
 
 
 def nouvelle_facture(facture_id: str = "fac-1") -> Facture:
@@ -98,4 +109,84 @@ def test_emission_simulee_et_avoir_total_unique(tmp_path):
         with pytest.raises(AvoirDejaCree):
             depot.creer_avoir_total(
                 "avoir-2", "fac-1", version_attendue=emise.version, annee=2026
+            )
+
+
+def test_source_reprise_conserve_le_dossier_corrige_et_l_original(tmp_path):
+    with DepotDocuments(str(tmp_path / "documents.db")) as depot:
+        original = DossierExtrait(
+            source_hash="empreinte-source",
+            client=ChampExtrait(valeur="Client extrait"),
+        )
+        depot.enregistrer_source(
+            "empreinte-source",
+            "commande.txt",
+            "Texte source local",
+            original,
+        )
+        corrige = original.model_copy(deep=True)
+        corrige.client = ChampExtrait(
+            valeur="Client confirmé",
+            source="Correction humaine",
+            confiance=1.0,
+        )
+        depot.mettre_a_jour_dossier_source(
+            "empreinte-source",
+            corrige,
+            client_id_revu="CLI-001",
+            articles_ids_revus=["ART-001"],
+        )
+
+        reprise = depot.obtenir_source("empreinte-source")
+        assert reprise["texte"] == "Texte source local"
+        assert reprise["dossier"].client.valeur == "Client confirmé"
+        assert reprise["client_id_revu"] == "CLI-001"
+        assert reprise["articles_ids_revus"] == ["ART-001"]
+        assert depot.lister_dossiers_originaux()[0].client.valeur == "Client extrait"
+
+        with pytest.raises(ErreurDocument, match="introuvable"):
+            depot.obtenir_source("inconnu")
+
+
+def test_reglements_simules_idempotents_et_sans_depassement(tmp_path):
+    with DepotDocuments(str(tmp_path / "documents.db")) as depot:
+        depot.creer_brouillon(nouvelle_facture())
+        validee = depot.valider("fac-1", version_attendue=1, annee=2026)
+        emise = depot.emettre("fac-1", version_attendue=validee.version)
+
+        premier = depot.enregistrer_reglement(
+            "fac-1", "MM-001", Decimal("1000"), "Mobile Money simulé"
+        )
+        assert depot.enregistrer_reglement(
+            "fac-1", "MM-001", Decimal("1000"), "Mobile Money simulé"
+        ) == premier
+        assert depot.solde_restant("fac-1") == Decimal("1360")
+        assert len(depot.lister_reglements("fac-1")) == 1
+
+        with pytest.raises(ConflitReglement):
+            depot.enregistrer_reglement(
+                "fac-1", "MM-001", Decimal("900"), "Mobile Money simulé"
+            )
+        with pytest.raises(ValueError, match="solde restant"):
+            depot.enregistrer_reglement(
+                "fac-1", "MM-002", Decimal("1400"), "Espèces simulées"
+            )
+
+        second = depot.enregistrer_reglement(
+            "fac-1", "MM-002", Decimal("1360"), "Espèces simulées"
+        )
+        assert second.facture_id == "fac-1"
+        assert depot.solde_restant("fac-1") == Decimal("0")
+
+
+def test_reglement_refuse_un_document_non_emis_et_montant_invalide(tmp_path):
+    with DepotDocuments(str(tmp_path / "documents.db")) as depot:
+        depot.creer_brouillon(nouvelle_facture())
+        with pytest.raises(TransitionInvalide, match="facture émise"):
+            depot.enregistrer_reglement(
+                "fac-1", "MM-001", Decimal("1"), "Mobile Money simulé"
+            )
+        with pytest.raises(ValueError, match="positif"):
+            depot.enregistrer_reglement(
+                "fac-1", "MM-001", Decimal("0"), "Mobile Money simulé"
             )

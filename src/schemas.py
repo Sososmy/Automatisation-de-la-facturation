@@ -86,8 +86,9 @@ class LigneExtraite(BaseModel):
 class LigneLivree(BaseModel):
     """Ligne d'une pièce de livraison (facultative)."""
 
-    designation: str
-    quantite: Decimal
+    designation: str = Field(min_length=1)
+    quantite: Decimal = Field(gt=0, allow_inf_nan=False)
+    source: Optional[str] = None
 
 
 class DossierExtrait(BaseModel):
@@ -142,6 +143,15 @@ class Facture(BaseModel):
     total_ttc: Decimal = Decimal("0")
     facture_origine_id: Optional[str] = None  # renseigné pour un avoir lié
     version: int = 1  # verrou optimiste (validations concurrentes)
+
+
+class Reglement(BaseModel):
+    id: str
+    facture_id: str
+    reference: str
+    montant: Decimal = Field(gt=0, allow_inf_nan=False)
+    mode: str
+    horodatage: str
 
 
 # --------------------------------------------------------------------------

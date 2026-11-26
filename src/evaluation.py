@@ -23,6 +23,7 @@ CHAMPS_LIGNE = ["designation", "quantite", "prix_unitaire", "remise"]
 CRITIQUES = {"client", "quantite", "prix_unitaire"}  # une erreur ici fausse la facture
 NUMERIQUES = {"quantite", "prix_unitaire", "remise", "total_ht_declare", "total_ttc_declare"}
 SEUIL_TEXTE = {"client": 90, "designation": 85, "conditions_paiement": 80, "numero_commande": 100}
+_DUREE_PAIEMENT = re.compile(r"\b(\d+)\s*(jours?|semaines?|mois|ans?|annees?)\b")
 
 # --------------------------------------------------------------------------
 # Lecture d'une extraction (dict) et conversion d'un DossierExtrait
@@ -52,6 +53,11 @@ def egal(champ: str, attendu: str, predit: str) -> bool:
         da, dp = normaliser_date(attendu), normaliser_date(predit)
         return da == dp if da and dp else normaliser(attendu) == normaliser(predit)
     a, p = normaliser(attendu).replace(" ", ""), normaliser(predit).replace(" ", "")
+    if champ == "conditions_paiement":
+        duree_attendue = _DUREE_PAIEMENT.search(normaliser(attendu))
+        duree_predite = _DUREE_PAIEMENT.search(normaliser(predit))
+        if duree_attendue and duree_predite:
+            return duree_attendue.groups() == duree_predite.groups()
     return fuzz.ratio(a, p) >= SEUIL_TEXTE.get(champ, 90)
 
 
@@ -157,9 +163,17 @@ def evaluer_pipeline(cas: list[dict], extraire_fn: Callable[[str], ResultatExtra
             brut = dossier_vers_dict(res.dossier)
             total["rejets"] += len(res.rejets)
             total["mode_degrade"] += res.mode == "degrade"
-        except ExtractionError:
+        except ExtractionError as erreur:
             brut = None
             total["erreurs_extraction"] += 1
+            if journal is not None:
+                journal.append(
+                    {
+                        "id": un_cas.get("id"),
+                        "type": "erreur_extraction",
+                        "message": str(erreur),
+                    }
+                )
         latences.append(time.perf_counter() - t0)
         total += evaluer_cas(un_cas["attendu"], brut, un_cas["texte"], journal, un_cas.get("id"))
     return resume(total, latences, len(cas))

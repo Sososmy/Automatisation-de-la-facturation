@@ -1,0 +1,15 @@
+services:
+  facturation:
+    build: .
+    ports:
+      - "127.0.0.1:8501:8501"
+    environment:
+      DATABASE_URL: sqlite:///./data/app.db
+      APP_USER: ${APP_USER:-admin}
+      APP_PASSWORD: ${APP_PASSWORD:?Definir APP_PASSWORD dans l'environnement}
+    volumes:
+      - facturation-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  facturation-data:

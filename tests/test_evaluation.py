@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 from src.evaluation import (charger_jeu, dossier_vers_dict, egal, evaluer_cas,
@@ -6,6 +8,11 @@ from src.evaluation import (charger_jeu, dossier_vers_dict, egal, evaluer_cas,
 from src.extraction import ExtractionError, extraire, lire_json, lire_texte
 
 JEU = Path(__file__).resolve().parents[1] / "data" / "eval" / "exemple.jsonl"
+JEUX_ANNOTES = (
+    JEU,
+    Path(__file__).resolve().parents[1] / "data" / "eval" / "bwai2026_developpement.jsonl",
+    Path(__file__).resolve().parents[1] / "data" / "eval" / "bwai2026_test.jsonl",
+)
 
 
 def reponse_parfaite(attendu, texte):
@@ -33,17 +40,23 @@ def test_egal_formats():
     assert egal("date", "2026-11-18", "18/11/2026")
     assert egal("quantite", "6500", "6 500")
     assert egal("taux_taxe", "18 %", "0,18")
+    assert egal("conditions_paiement", "7 jours", "sous 7 jours")
     assert egal("client", "Société Exemple", "societe exemple")
     assert not egal("prix_unitaire", "6500", "9000")
     assert not egal("numero_commande", "BC-2026-045", "BC-2026")
 
 
 def test_reponse_parfaite_donne_score_parfait():
-    for cas in charger_jeu(JEU):
-        c = evaluer_cas(cas["attendu"], reponse_parfaite(cas["attendu"], cas["texte"]), cas["texte"])
-        assert c["faux"] == 0 and c["omissions"] == 0 and c["inventions"] == 0
-        assert c["corrects"] == c["attendus"]
-        assert c["lignes_en_trop"] == 0
+    for jeu in JEUX_ANNOTES:
+        for cas in charger_jeu(jeu):
+            c = evaluer_cas(
+                cas["attendu"],
+                reponse_parfaite(cas["attendu"], cas["texte"]),
+                cas["texte"],
+            )
+            assert c["faux"] == 0 and c["omissions"] == 0 and c["inventions"] == 0
+            assert c["corrects"] == c["attendus"]
+            assert c["lignes_en_trop"] == 0
 
 
 def test_invention_detectee():
@@ -132,12 +145,13 @@ def llm_parfait(cas):
 
 
 def test_pipeline_avec_modele_parfait_donne_un_score_parfait():
-    cas = charger_jeu(JEU)
-    client = ClientFaux(llm_parfait(cas))
-    r = evaluer_pipeline(cas, lambda texte: extraire(lire_texte(texte), client))
-    assert r["exactitude"] == 1.0 and r["invention"] == 0.0
-    assert r["erreurs_extraction"] == 0 and r["valeurs_rejetees"] == 0
-    assert r["citations_verifiees"] == 1.0
+    for jeu in JEUX_ANNOTES:
+        cas = charger_jeu(jeu)
+        client = ClientFaux(llm_parfait(cas))
+        r = evaluer_pipeline(cas, lambda texte: extraire(lire_texte(texte), client))
+        assert r["exactitude"] == 1.0 and r["invention"] == 0.0
+        assert r["erreurs_extraction"] == 0 and r["valeurs_rejetees"] == 0
+        assert r["citations_verifiees"] == 1.0
 
 
 def test_pipeline_rejette_les_inventions_du_modele():
@@ -165,6 +179,24 @@ def test_pipeline_modele_illisible_ou_en_panne():
     assert r["erreurs_extraction"] == len(cas)
 
 
+def test_pipeline_journalise_les_erreurs_d_extraction():
+    cas = [charger_jeu(JEU)[0]]
+    journal = []
+    panne = ClientFaux(None, erreur=ExtractionError("réponse illisible"))
+    resultats = evaluer_pipeline(
+        cas,
+        lambda texte: extraire(lire_texte(texte), panne),
+        journal,
+    )
+
+    assert resultats["erreurs_extraction"] == 1
+    assert journal[0] == {
+        "id": cas[0]["id"],
+        "type": "erreur_extraction",
+        "message": "réponse illisible",
+    }
+
+
 def test_resume_expose_le_detail_par_champ():
     cas = charger_jeu(JEU)
     r = evaluer_pipeline(cas, lambda t: extraire(lire_texte(t), ClientFaux(lambda x: "{}")))
@@ -177,3 +209,27 @@ def test_dossier_vers_dict_garde_valeur_et_source():
     d = dossier_vers_dict(res.dossier)
     assert d["client"]["valeur"] == "Société Exemple" and d["client"]["source"]
     assert len(d["lignes"]) == 2
+
+
+def test_cli_baseline_degrade_ecrit_un_rapport(tmp_path):
+    racine = Path(__file__).resolve().parents[1]
+    sortie = tmp_path / "rapport.json"
+    execution = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "scripts.evaluate_extraction",
+            "--mode",
+            "degrade",
+            "--output",
+            str(sortie),
+        ],
+        cwd=racine,
+        check=True,
+        capture_output=True,
+    )
+
+    rapport = json.loads(sortie.read_text(encoding="utf-8"))
+    assert execution.stdout.startswith(b"{")
+    assert rapport["resultats"]["cas"] == len(charger_jeu(JEU))
+    assert rapport["resultats"]["erreurs_extraction"] == 0
